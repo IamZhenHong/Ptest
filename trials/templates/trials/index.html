@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Test</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    {% load static %}
+    <style>
+        html {
+            height: 100%;
+            background-image: url('{% static questions.0.background_image_path %}'); /* Use the background image of the first question or adjust as needed */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .question-container {
+            /* Remove background color */
+            padding: 40px;
+            border-radius: 10px;
+            margin: px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .question {
+            margin-bottom: 40px;
+            display: none;
+            text-align: center;
+            position: relative;
+            style="background-image: url('{{ question.background_image_path  }}');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;"
+        }
+
+        .text-box {
+            margin-bottom: 10px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+        }
+        
+        .tick-mark {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        img {
+            max-width: 80%; /* Ensure images don't exceed their container width */
+            height: auto; /* Maintain image aspect ratio */
+            border-radius: 8px; /* Optional: Add border-radius to images */
+        
+        }
+
+        label {
+            margin-top: 10px;
+            display: block;
+            background-color: #f0f0f0; /* Grey background color for options */
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #submitBtnContainer {
+            display: none;
+        }
+
+        #resultLabel {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .first-question {
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <form id="personalityForm" method="post" action="{% url 'index' %}">
+        {% csrf_token %}
+        <div class="question-container">
+            {% for question in questions %}
+                <div class="question" id="question_{{ question.id }}" data-background-image-path="{{ question.background_image_path }}" style="{% if forloop.first %}display:block;{% else %}display:none;{% endif %}">
+                    <div class="text-box">
+                        <p>{{ question.text }}</p>
+                    </div>
+                    {% if question.image_path %}
+                        <img src="{% static question.image_path %}" alt="Question Image">
+                    {% endif %}
+                    {% if question.background_image_path %}
+                        <style>
+                            #question_{{ question.id }} {
+                                background-image: url('{% static question.background_image_path }');
+                                background-size: cover;
+                                background-position: center;
+                                background-repeat: no-repeat;
+                            }
+                        </style>
+                    {% endif %}
+                    {% for option in question.option_set.all %}
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}" onclick="selectOption(this)">
+                            {{ option.text }}
+                        </label>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        
+
+
+        <div id="resultLabel"></div>
+    </form>
+    <script>
+        var currentQuestion = 1;
+        var answers = {};
+    
+        function selectOption(option) {
+            var question = $(option).closest('.question');
+            var questionId = question.attr('id').split('_')[1];
+            var optionId = $(option).val();
+            answers[questionId] = optionId;
+
+            // Create and append the tick mark
+            var tickMark = $('<span class="tick-mark">✔</span>').appendTo($(option).closest('label'));
+
+            // Get the background image path for the current question from the data attribute
+            var backgroundImagePath = question.data('background-image-path');
+
+            // Update background image dynamically for the current question container
+            $('.question-container').css("background-image", "url('{% static '" + backgroundImagePath + "' %}')");
+
+            // Show the tick mark
+            setTimeout(function() {
+                tickMark.css({ opacity: 1, visibility: 'visible' });
+            }, 10); // A very small delay to ensure the tick mark is shown
+
+            // Hide the current question after a short delay
+            setTimeout(function() {
+                question.removeClass('question-background').hide();
+
+                // Display the next question after a short delay
+                setTimeout(function() {
+                    // Remove the tick mark
+                    tickMark.remove();
+
+                    // Display the next question
+                    if ($('#question_' + (currentQuestion + 1)).length > 0) {
+                        currentQuestion++;
+                        $('#question_' + currentQuestion).addClass('question-background').show();
+                    } else {
+                        // Automatically submit the form after selecting an option for the last question
+                        submitForm();
+                    }
+                }, 10); // A very small delay to ensure smooth transition
+            }, 300); // Adjust the duration (in milliseconds) as needed
+        }
+
+
+        function submitForm() {
+            // Check if all questions have been answered
+            var unansweredQuestions = $('.question:visible').length;
+            if (unansweredQuestions > 0) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+    
+            // Disable the submit button during the AJAX request
+            $('#submitBtn').prop('disabled', true);
+    
+            $.ajax({
+                type: 'POST',
+                url: window.location.href,
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    answers: JSON.stringify(answers)
+                },
+                success: function (response) {
+                    console.log('Server Response:', response);
+    
+                    if (response.personality_type) {
+                        console.log('Redirecting to result view...');
+                        window.location.href = '/result/?personality_type=' + response.personality_type;
+                    } else if (response.error) {
+                        $('#resultLabel').text('Error: ' + response.error);
+                    }
+                },
+    
+                error: function (error) {
+                    console.error('Server Error:', error);
+                    $('#resultLabel').text('Error: There was an error processing your request.');
+                },
+                complete: function () {
+                    // Re-enable the submit button after the AJAX request
+                    $('#submitBtn').prop('disabled', false);
+                }
+            });
+        }
+    </script>
+    
+    
+</body>
+</html>

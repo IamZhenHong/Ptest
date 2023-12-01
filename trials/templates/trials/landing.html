@@ -1,0 +1,65 @@
+<!-- myapp/templates/myapp/landing_page.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <!-- Add your CSS styles or include external stylesheets here -->
+    {% load static %}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .top,
+        .bottom {
+            height: calc(2/9 * 100vh);
+            background-color: #6f3e42;
+        }
+
+        .center {
+            height: calc(5/9 * 100vh);
+            background-color: #e8e0d5;
+            display: flex;
+            flex-direction: row; /* Set flex direction to row */
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3em;
+        }
+
+        p {
+            font-size: 1.5em;
+        }
+
+        /* Add new styles for the image */
+        .center img {
+            max-width: 50%; /* Ensure the image doesn't exceed its container */
+            height: 500px; /* Maintain the aspect ratio */
+            margin: 0; /* Remove margin to avoid spacing issues */
+            display: block; /* Remove any default inline styling */
+        }
+
+        /* Add styles for positioning the link */
+        .center a {
+            margin-right: 20px; /* Add space to the right of the link */
+        }
+    </style>
+</head>
+<body>
+    <div class="top"></div>
+    <div class="center">
+        <a href="{% url 'index' %}">Go to Index</a>
+        <img src="{% static 'images/landing_page.png' %}" alt="Landing Page">
+    </div>
+    <div class="bottom"></div>
+</body>
+</html>
