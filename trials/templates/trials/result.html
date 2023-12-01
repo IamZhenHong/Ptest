@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Test Result</title>
+    <!-- Add your CSS styles or include external stylesheets here -->
+    {% load static %}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: url("{% static personality_type.background_image %}") center/cover fixed;
+            background-size: cover; /* Ensure the background image covers the entire background */
+            background-position: center; /* Center the background image */
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .spacing {
+            margin-top: 2%; /* Adjust the percentage based on your preference */
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+    {% if personality_type %}
+        <img src="{% static personality_type.name_image_path %}" alt="Personality Logo">
+
+        <img src="{% static personality_type.images %}" alt="Personality Image">
+
+        <div class="spacing"></div>
+
+        <a href="{{ current_page_url }}" target="_blank">
+            <img src="{% static 'images/shareablelink.png' %}" alt="Learn more">
+        </a>
+
+        <div class="spacing"></div>
+
+        <a href="{{ personality_type.link }}" target="_blank">
+            <img src="{% static 'images/personality.png' %}" alt="Share your result">
+        </a>
+    {% else %}
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
