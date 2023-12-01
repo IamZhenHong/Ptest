@@ -1,4 +1,5 @@
 flake8==6.1.0
+gunicorn==21.2.0
 mccabe==0.7.0
 pipdeptree==2.13.1
 pycodestyle==2.11.1
