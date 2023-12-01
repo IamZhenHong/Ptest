@@ -8,3 +8,4 @@ pipdeptree==2.13.1
 pycodestyle==2.11.1
 pyflakes==3.1.0
 sqlparse==0.4.4
+whitenoise==6.6.0
